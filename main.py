@@ -44,7 +44,7 @@ class MapWindow(QMainWindow):
 
     def load_map(self):
         static_map = StaticYandexMap(*map(float, self.coordinates.split(',')))
-        static_map.params['z'] = self.zoom  # Обновляем значение масштаба в параметрах карты
+        static_map.params['z'] = self.zoom
         url = static_map.get_url()
         response = get(url)
         if response.status_code == 200:
@@ -61,11 +61,11 @@ class MapWindow(QMainWindow):
 
     def keyPressEvent(self, event):
         if event.key() == 16777238:  # PgUp
-            if self.zoom < 17:  # Проверка максимального значения масштаба
+            if self.zoom < 17:
                 self.zoom += 1
                 self.load_map()
         elif event.key() == 16777239:  # PgDown
-            if self.zoom > 0:  # Проверка минимального значения масштаба
+            if self.zoom > 0:
                 self.zoom -= 1
                 self.load_map()
 
