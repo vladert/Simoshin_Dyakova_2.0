@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWid
 from PyQt5.QtGui import QPixmap
 from requests import get
 
+
 class StaticYandexMap:
     def __init__(self, center_longitude, center_latitude):
         self.params = {
@@ -14,6 +15,7 @@ class StaticYandexMap:
     def get_url(self):
         base_url = 'https://static-maps.yandex.ru/1.x/'
         return f"{base_url}?{'&'.join([f'{key}={value}' for key, value in self.params.items()])}"
+
 
 class MapWindow(QMainWindow):
     def __init__(self, apikey, coordinates, zoom, parent=None):
@@ -60,6 +62,7 @@ class MapWindow(QMainWindow):
         self.load_map()
 
     def keyPressEvent(self, event):
+        step = 0.1
         if event.key() == 16777238:  # PgUp
             if self.zoom < 17:
                 self.zoom += 1
@@ -68,6 +71,17 @@ class MapWindow(QMainWindow):
             if self.zoom > 0:
                 self.zoom -= 1
                 self.load_map()
+        elif event.key() == 16777235:  # Вверх
+            lat, lon = map(float, self.coordinates.split(','))
+            lat = min(85, lat + step)  # Ограничение максимальной широты
+            self.coordinates = f"{lon},{lat}"
+            self.load_map()
+        elif event.key() == 16777237:  # Вниз
+            lat, lon = map(float, self.coordinates.split(','))
+            lat = lat + step
+            self.coordinates = f"{lon},{lat}"
+            self.load_map()
+
 
 if __name__ == '__main__':
     apikey = "40d1649f-0493-4b70-98ba-98533de7710b"
