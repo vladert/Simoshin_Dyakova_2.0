@@ -1,17 +1,16 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWidget, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QVBoxLayout, QWidget, QLineEdit, QPushButton, QComboBox
 from PyQt5.QtGui import QPixmap
 from requests import get
 
 
 class StaticYandexMap:
-    def __init__(self, center_longitude, center_latitude):
+    def __init__(self, center_longitude, center_latitude, map_type='map'):
         self.params = {
             'll': f'{center_longitude},{center_latitude}',
-            'l': 'map',
+            'l': map_type,
             'z': 10,
         }
-
     def get_url(self):
         base_url = 'https://static-maps.yandex.ru/1.x/'
         return f"{base_url}?{'&'.join([f'{key}={value}' for key, value in self.params.items()])}"
@@ -25,7 +24,7 @@ class MapWindow(QMainWindow):
         self.zoom = zoom
         self.image = None
         self.create_ui()
-        self.load_map()  # загрузка карты при запуске приложения
+        self.load_map()
 
     def create_ui(self):
         self.setWindowTitle("Карта")
@@ -37,6 +36,10 @@ class MapWindow(QMainWindow):
         central_widget = QWidget()
         layout = QVBoxLayout()
         self.map_label = QLabel()
+        self.map_type_combo = QComboBox()
+        self.map_type_combo.addItems(['Схема', 'Спутник', 'Гибрид'])
+        self.map_type_combo.currentIndexChanged.connect(self.change_map_type)
+        layout.addWidget(self.map_type_combo)
         layout.addWidget(coordinates_label)
         layout.addWidget(self.coordinates_input)
         layout.addWidget(update_button)
@@ -54,6 +57,7 @@ class MapWindow(QMainWindow):
                 file.write(response.content)
             self.image = QPixmap("map_temp.jpg")
             self.map_label.setPixmap(self.image)
+            self.map_label.setFocus()
         else:
             self.map_label.setText('Ошибка загрузки карты')
 
@@ -81,6 +85,11 @@ class MapWindow(QMainWindow):
             lat = lat + step
             self.coordinates = f"{lon},{lat}"
             self.load_map()
+
+    def change_map_type(self):
+        map_types = {'Схема': 'map', 'Спутник': 'sat', 'Гибрид': 'sat,skl'}
+        self.map_type = map_types[self.map_type_combo.currentText()]
+        self.load_map()
 
 
 if __name__ == '__main__':
